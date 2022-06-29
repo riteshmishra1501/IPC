@@ -1,7 +1,9 @@
-Here i am experimenting with posix based message queue technique, where we have 2 process sender and receiver
+I am experimenting with posix based message queue technique, where we have 2 process sender and receiver
 Message Queue overview :
-it's N:1 approach ( N sender but only 1 receiver)
-Message queue is nothing but a kernel utility where data gets multiple copies (form user space to kernel space in sender then again from kernel space to user space in receiver
+1) It's N:1 approach (N sender but only 1 receiver)
+2) Message queue is nothing but a kernel utility where data gets multiple copies (form user space to kernel space    in sender then again from kernel space to user space in receiver
+3) There can be multiple sender for one message queue but has to be just one receiver at a time though using the 
+   select system call a receiver process can listen more than other message queue at the same time
 
 APIs Being used:
 
@@ -12,7 +14,7 @@ mode- permission
 attr - specify various attributes like max size of msq Q, max number of message etc..
 we can check other attributes here - /proc/sys/fs/mqueue
 
-2) mq_close(mqd_t msg_q)
+2) mq_close(mqd_t msg_q)    //for closing the msg queue
 
 3) mq_send(mqd_t msgq, char *msg_ptr, size_t msg_len, unsigned int msg_prio)  //for enquing the data
 msgq - msgq id
@@ -30,4 +32,12 @@ select(msgq_fd + 1, &readfds, NULL, NULL, NULL);
 
 FD_ISSET(msgq_fd, &readfds)) //checking our megQ file descriptor got activated or not if it's true the call mq_receive
 then call the mq_receive()
+
+How to compile the code  
+
+gcc -g -c receiver.c -o reveiver.o
+gcc -g reveiver.o reveiver -ltr
+
+gcc -g -c sender.c -o sender.o
+gcc -g sender.o -o sender -lrt
 

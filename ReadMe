@@ -1,0 +1,33 @@
+Here i am experimenting with posix based message queue technique, where we have 2 process sender and receiver
+Message Queue overview :
+it's N:1 approach ( N sender but only 1 receiver)
+Message queue is nothing but a kernel utility where data gets multiple copies (form user space to kernel space in sender then again from kernel space to user space in receiver
+
+APIs Being used:
+
+1) mq_open(const char *name, int oflag, mode_t mode, struct mq_attr *attr)
+name - name of the queue eg : "/my_msgq"
+flag - O_READONLY, O_WRONLY, O_RDWR, O_CREATE
+mode- permission
+attr - specify various attributes like max size of msq Q, max number of message etc..
+we can check other attributes here - /proc/sys/fs/mqueue
+
+2) mq_close(mqd_t msg_q)
+
+3) mq_send(mqd_t msgq, char *msg_ptr, size_t msg_len, unsigned int msg_prio)  //for enquing the data
+msgq - msgq id
+msg_ptr - pointer to the buffer being send
+msg_len - length of the message
+msg_prio - priority of the message, heigher the message greater the prioity
+
+mq_receive() ( same as send API) 
+
+on receiver.c side we will call FD_ZERO , FD_SET , select() FD_ISSET function before reading the data 
+FD_ZERO(&readfds);                            //flush off all the data structure which are present in fd_set DS
+FD_SET( msgq_fd, &readfds);                   //add message queue file descriptor which mq_open has created
+select(msgq_fd + 1, &readfds, NULL, NULL, NULL);  
+//now process can simply invoke the select system call, receiving process will get blocked until some sending process places the data in this message queue
+
+FD_ISSET(msgq_fd, &readfds)) //checking our megQ file descriptor got activated or not if it's true the call mq_receive
+then call the mq_receive()
+

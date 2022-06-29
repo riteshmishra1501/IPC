@@ -1,7 +1,8 @@
-Here i am experimenting with posix based message queue technique, where we have 2 process sender and receiver
+I am experimenting with posix based message queue technique, where we have 2 process sender and receiver
 Message Queue overview :
-it's N:1 approach ( N sender but only 1 receiver)
-Message queue is nothing but a kernel utility where data gets multiple copies (form user space to kernel space in sender then again from kernel space to user space in receiver
+1) it's N:1 approach ( N sender but only 1 receiver)
+2) Message queue is nothing but a kernel utility where data gets multiple copies (form user space to kernel space in sender then again from kernel space to user space in receiver
+3) one receiver can read data from different queue at the same time using select system call
 
 APIs Being used:
 
@@ -20,14 +21,21 @@ msg_ptr - pointer to the buffer being send
 msg_len - length of the message
 msg_prio - priority of the message, heigher the message greater the prioity
 
-mq_receive() ( same as send API) 
+4) mq_receive() ( same as send API) 
 
 on receiver.c side we will call FD_ZERO , FD_SET , select() FD_ISSET function before reading the data 
 FD_ZERO(&readfds);                            //flush off all the data structure which are present in fd_set DS
 FD_SET( msgq_fd, &readfds);                   //add message queue file descriptor which mq_open has created
 select(msgq_fd + 1, &readfds, NULL, NULL, NULL);  
-//now process can simply invoke the select system call, receiving process will get blocked until some sending process places the data in this message queue
+//now process can simply invoke the select system call,receiving process will get blocked until some sending process places the data in this message queue
 
 FD_ISSET(msgq_fd, &readfds)) //checking our megQ file descriptor got activated or not if it's true the call mq_receive
 then call the mq_receive()
 
+How to compile the code 
+
+gcc -g -c receiver.c -o reveiver.o
+gcc -g reveiver.o reveiver -ltr
+
+gcc -g -c sender.c -o sender.o
+gcc -g sender.o -o sender -lrt
